@@ -1,0 +1,1 @@
+docker run --env=MYSQL_HOST=host.docker.internal -p 5000:5000  trieuvu/recommend:v2

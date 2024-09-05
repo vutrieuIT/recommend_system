@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from connect_db import MySQLConnection
 import pandas as pd
+from waitress import serve
 import os
 
 from collaborative_class import CollaborativeClass
@@ -78,5 +79,6 @@ class App:
         return jsonify({'message': 'Products has been refreshed'})
     
 
-    def run(self, debug=False, host='localhost', port=5000):
-        self.app.run(debug=debug, host=host, port=port)
+    def run(self, debug=False, host='0.0.0.0', port=5000):
+        print('Server at http://{}:{}'.format(host, port))
+        serve(self.app, host=host, port=port)
