@@ -31,10 +31,10 @@ class App:
         self.add_urls()
     
     def add_urls(self):
-        self.app.add_url_rule('/api/v2/recommend/<int:user_id>', 'recommend', self.recommend, methods=['GET'])
-        self.app.add_url_rule('/api/v2/recommend_product/<int:index>', 'recommend_product', self.recommend_product, methods=['GET'])
-        self.app.add_url_rule('/api/v2/refresh_ratings', 'refresh_ratings', self.refresh_ratings, methods=['GET'])
-        self.app.add_url_rule('/api/v2/refresh_products', 'refresh_products', self.refresh_products, methods=['GET'])
+        self.app.add_url_rule('/recommend/user/<int:user_id>', 'recommend', self.recommend, methods=['GET'])
+        self.app.add_url_rule('/recommend/product/<int:index>', 'recommend_product', self.recommend_product, methods=['GET'])
+        self.app.add_url_rule('/recommend/refresh/ratings', 'refresh_ratings', self.refresh_ratings, methods=['GET'])
+        self.app.add_url_rule('/recommend/refresh/products', 'refresh_products', self.refresh_products, methods=['GET'])
         
     def get_data(self, sql):
         self.conn.connect()
