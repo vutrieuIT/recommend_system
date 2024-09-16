@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin 
 from connect_db import MySQLConnection
 import pandas as pd
 from waitress import serve
@@ -10,18 +11,19 @@ from content_base_class import ContentBase
 host = os.environ.get('MYSQL_HOST', 'localhost')
 user = os.environ.get('MYSQL_USER', 'root')
 password = os.environ.get('MYSQL_PASSWORD', '12345')
-database = os.environ.get('MYSQL_DATABASE', 'recommend')
+database = os.environ.get('MYSQL_DATABASE', 'tlcn')
 
-sql_rating = "SELECT * FROM ratings"
-sql_product = "SELECT * FROM cellphones"
+sql_rating = "SELECT user_id, cellphone_id, rating FROM ratings"
+sql_product = "SELECT * FROM specification"
 columns_products = ["internal_memory","RAM","performance","main_camera","selfie_camera","battery_size","screen_size","weight","price"]
-col_unused = ['cellphone_id',"brand", "model", "operating_system"]
+col_unused = ['cellphone_id',"brand_id", "model", "operating_system"]
 
 
 class App:
     def __init__(self):
         self.conn = MySQLConnection(host=host, user=user, password=password, database=database)
         self.app = Flask(__name__)
+        CORS(self.app)
         self.data = pd.DataFrame(self.get_data(sql_rating), columns=['user_id', 'cellphone_id', 'rating'])
         self.products = pd.DataFrame(self.get_product(sql_product), columns=col_unused + columns_products)
         self.model = CollaborativeClass(self.data.values, k=10, uuCF=1)
