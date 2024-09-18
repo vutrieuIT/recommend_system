@@ -58,6 +58,7 @@ class App:
         return jsonify(self.data.to_dict(orient='records'))
     
     def recommend(self, user_id):
+        print("user_id: ", user_id)
         spected_rating = request.args.get('spected_rating', default=6, type=float)
         if user_id not in self.data['user_id'].values:
             user_ids = self.data['user_id'].values.distinct().tolist()
@@ -65,6 +66,7 @@ class App:
         return self.model.recommend(user_id, spected_rating=spected_rating)
 
     def recommend_product(self, index):
+        print("product_id: ", index)
         limit = request.args.get('limit', default=5, type=int)
         return self.model_product.recommend(index, limit=limit)
 
