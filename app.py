@@ -4,6 +4,7 @@ from connect_db import MySQLConnection
 import pandas as pd
 from waitress import serve
 import os
+import numpy as np
 
 from collaborative_class import CollaborativeClass
 from content_base_class import ContentBase
@@ -61,7 +62,7 @@ class App:
         print("user_id: ", user_id)
         spected_rating = request.args.get('spected_rating', default=6, type=float)
         if user_id not in self.data['user_id'].values:
-            user_ids = self.data['user_id'].values.distinct().tolist()
+            user_ids = np.unique(self.data['user_id'].values).tolist()
             return jsonify({'message': 'User ID not found', 'user_ids': user_ids})
         return self.model.recommend(user_id, spected_rating=spected_rating)
 
