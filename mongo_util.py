@@ -5,6 +5,7 @@ class MongoUtil:
     self.index_to_user = {}
     self.item_to_index = {}
     self.index_to_item = {}
+    self.index_to_real_product_id = {}
 
   def convertUserId(self, user_id):
     if user_id in self.user_to_index:
@@ -25,6 +26,11 @@ class MongoUtil:
     if index in self.index_to_item:
       return self.index_to_item[index]
     return ""
+
+  def convertIndexToRealProductId(self, index):
+    if index in self.index_to_real_product_id:
+        return self.index_to_real_product_id[index]
+    return ""
   
   def convertList(self, method, data):
     return [method(item) for item in data]
@@ -34,15 +40,13 @@ class MongoUtil:
 
   def convertMongoData(self, data, columns=['userId', 'productId']):
     if 'userId' in columns:
-      self.user_to_index = {user: index for index, user in enumerate(np.unique(data['userId']))}
-      self.index_to_user = {index: user for index, user in enumerate(np.unique(data['userId']))}
-      data['userId'] = data['userId'].map(self.user_to_index)
+        self.user_to_index = {user: index for index, user in enumerate(np.unique(data['userId']))}
+        self.index_to_user = {index: user for index, user in enumerate(np.unique(data['userId']))}
+        data['userId'] = data['userId'].map(self.user_to_index)
     if 'productId' in columns:
-      self.item_to_index = {item: index for index, item in enumerate(np.unique(data['productId']))}
-      self.index_to_item = {index: item for index, item in enumerate(np.unique(data['productId']))}
-      data['productId'] = data['productId'].map(self.item_to_index)
+        self.item_to_index = {item: index for index, item in enumerate(np.unique(data['productId']))}
+        self.index_to_item = {index: item for index, item in enumerate(np.unique(data['productId']))}
+        self.index_to_real_product_id = {index: item for index, item in enumerate(data['productId'])}
+        data['productId'] = data['productId'].map(self.item_to_index)
     return data
-
-  def convertMongoFrameToNumpy(self, data):
-    return data.values
   

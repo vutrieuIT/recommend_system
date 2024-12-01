@@ -98,7 +98,7 @@ class CollaborativeClass(object):
         if self.uuCF: return self.__pred(u, i, normalize)
         return self.__pred(i, u, normalize)
 
-    def recommend(self, u, spected_rating = 6, normalized = 1):
+    def recommend(self, u, spected_rating = 3, normalized = 1):
         """
         Determine all items should be recommended for user u. (uuCF =1)
         or all users who might have interest on item u (uuCF = 0)

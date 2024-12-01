@@ -53,33 +53,32 @@ class App:
         self.mongoUtil = MongoUtil()
         self.data = self.get_rating()
         self.products = self.get_product()
-        self.model = CollaborativeClass(self.data, k=5, uuCF=1)
+        self.model = CollaborativeClass(self.data.values, k=5, uuCF=1)
         self.model.fit()
         self.model_product = ContentBase(self.products, columns_products)
         self.model_product.fit()
         self.add_urls()
     
     def add_urls(self):
-        self.app.add_url_rule('/recommend/user/<int:user_id>', 'recommend', self.recommend, methods=['GET'])
-        self.app.add_url_rule('/recommend/product/<int:index>', 'recommend_product', self.recommend_product, methods=['GET'])
+        self.app.add_url_rule('/recommend/user/<string:user_id>', 'recommend', self.recommend, methods=['GET'])
+        self.app.add_url_rule('/recommend/product/<string:index>', 'recommend_product', self.recommend_product, methods=['GET'])
         self.app.add_url_rule('/recommend/refresh/ratings', 'refresh_ratings', self.refresh_ratings, methods=['GET'])
         self.app.add_url_rule('/recommend/refresh/products', 'refresh_products', self.refresh_products, methods=['GET'])
         
     def get_rating(self):
         self.conn.connect(database=mongo_database)
         data = self.conn.execute_query('rating', query_mongo_rating, projection_rating)
-        data_converted = self.mongoUtil.convertMongoFrameToNumpy(self.mongoUtil.convertMongoData(pd.DataFrame(data)))
+        data_frame = self.mongoUtil.convertMongoData(pd.DataFrame(data))
         self.conn.close()
-        return data_converted
+        return data_frame
 
     def get_product(self):
         self.conn.connect(database=mongo_database)
         data = self.conn.execute_aggregation('product', pipeline_product)
         data_frame = pd.DataFrame(data).rename(columns={"_id": "productId"})
-        data_frame_converted = self.mongoUtil.convertMongoData(data_frame, columns=['productId'])
-        print("MYTEST: ", data_frame_converted)
+        # data_frame_converted = self.mongoUtil.convertMongoData(data_frame, columns=['productId'])
         self.conn.close()
-        return data_frame_converted
+        return data_frame
 
     def api(self):
         data = request.args.get('data')
@@ -90,10 +89,12 @@ class App:
     
     def recommend(self, user_id):
         print("user_id: ", user_id)
-        user_id = self.mongoUtil.convertUserId(user_id)
-        spected_rating = request.args.get('spected_rating', default=6, type=float)
+        user_id = int(self.mongoUtil.convertUserId(user_id))
+        print("user_id: ", user_id)
+        spected_rating = request.args.get('spected_rating', default=3, type=float)
         if user_id not in self.data['userId'].values:
             user_ids = np.unique(self.data['userId'].values).tolist()
+            user_ids = self.mongoUtil.convertList(self.mongoUtil.convertIndexToUser, user_ids)
             return jsonify({'message': 'User ID not found', 'user_ids': user_ids})
         result = self.model.recommend(user_id, spected_rating=spected_rating)
         result_converted = self.mongoUtil.convertList(self.mongoUtil.convertIndexToProduct, result)
@@ -101,15 +102,18 @@ class App:
 
     def recommend_product(self, index):
         print("product_id: ", index)
-        index = self.mongoUtil.convertProductId(index)
+        index = int(self.mongoUtil.convertProductId(index))
+        print("product_id: ", index)
         limit = request.args.get('limit', default=5, type=int)
         result = self.model_product.recommend(index, limit=limit)
-        result_converted = self.mongoUtil.convertList(self.mongoUtil.convertIndexToProduct, result)
+        print(result)
+        print(self.mongoUtil.index_to_item)
+        result_converted = self.mongoUtil.convertList(self.mongoUtil.convertIndexToRealProductId, result)
         return result_converted
 
     def refresh_ratings(self):
         self.data = self.get_rating()
-        self.model = CollaborativeClass(self.data, k=5, uuCF=1)
+        self.model = CollaborativeClass(self.data.values, k=5, uuCF=1)
         self.model.fit()
         return jsonify({'message': 'Ratings has been refreshed'})
     
