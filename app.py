@@ -76,7 +76,6 @@ class App:
         self.conn.connect(database=mongo_database)
         data = self.conn.execute_aggregation('product', pipeline_product)
         data_frame = pd.DataFrame(data).rename(columns={"_id": "productId"})
-        # data_frame_converted = self.mongoUtil.convertMongoData(data_frame, columns=['productId'])
         self.conn.close()
         return data_frame
 
@@ -90,7 +89,6 @@ class App:
     def recommend(self, user_id):
         print("user_id: ", user_id)
         user_id = int(self.mongoUtil.convertUserId(user_id))
-        print("user_id: ", user_id)
         spected_rating = request.args.get('spected_rating', default=3, type=float)
         if user_id not in self.data['userId'].values:
             user_ids = np.unique(self.data['userId'].values).tolist()
@@ -103,11 +101,8 @@ class App:
     def recommend_product(self, index):
         print("product_id: ", index)
         index = int(self.mongoUtil.convertProductId(index))
-        print("product_id: ", index)
         limit = request.args.get('limit', default=5, type=int)
         result = self.model_product.recommend(index, limit=limit)
-        print(result)
-        print(self.mongoUtil.index_to_item)
         result_converted = self.mongoUtil.convertList(self.mongoUtil.convertIndexToRealProductId, result)
         return result_converted
 
