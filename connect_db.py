@@ -1,30 +1,23 @@
 import mysql.connector
+from pymongo import MongoClient
 import pandas as pd
 import os 
 
-class MySQLConnection:
+class ConnectMongoDB:
 
-    def __init__(self, host, user, password, database):
+    def __init__(self, host, port):
         self.host = host
-        self.user = user
-        self.password = password
-        self.database = database
-        self.conn = None
-        self.cursor = None
+        self.port = port
+    
+    def connect(self, database):
+        self.client = MongoClient(self.host, self.port)
+        self.db = self.client[database]
 
-    def connect(self):
-        self.conn = mysql.connector.connect(
-            host=self.host,
-            user=self.user,
-            password=self.password,
-            database=self.database
-        )
-        self.cursor = self.conn.cursor()
-
-    def execute_query(self, query):
-        self.cursor.execute(query)
-        return self.cursor.fetchall()
+    def execute_query(self, collection, query, projection):
+        return self.db[collection].find(query, projection)
+    
+    def execute_aggregation(self, collection, pipeline):
+        return self.db[collection].aggregate(pipeline)
 
     def close(self):
-        self.cursor.close()
-        self.conn.close()
+        self.client.close()
