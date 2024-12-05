@@ -1,4 +1,3 @@
-import mysql.connector
 from pymongo import MongoClient
 import pandas as pd
 import os 
